@@ -9,9 +9,6 @@
 
 # My (John Pham's) app token: QoQet97KEDYpMW4x4Manaflkp
 
-# TO-DO
-# * calculate the poverty percentage for an entire ZIP code and output it into a CSV file
-
 import requests
 import json
 
@@ -40,27 +37,34 @@ def getSchoolsByZIPCode(zipCode):
     jsonText = json.loads(resultText)
     return jsonText
 
-def getPovertyPercentByZIPCode(zipCode, year="2017-18"):
-    getUrl = "https://data.cityofnewyork.us/resource/s52a-8aq6.json"
-    parameters = {"year":year, "$$app_token":"QoQet97KEDYpMW4x4Manaflkp"} 
-    requestResult = requests.get(getUrl, params=parameters) #submit the GET request
-    resultText = requestResult.text #obtain the requested text
-    jsonText = json.loads(resultText)
-    print(len(jsonText))
+def getNumSchoolsByZIPCode(zipCode):
+    return len(getSchoolsByZIPCode(zipCode))
 
-def printSchoolsPovertyPercentbyZIPCode(zipCode, year="2017-18"):
+def getPovertyPercentByZIPCode(zipCode, year="2017-18"):
+    print("Retrieving school poverty data...")
     schoolsArray = getSchoolsByZIPCode(zipCode)
+    povertyPercentArray = []
     for school in schoolsArray:
         schoolDBN = school["ats_system_code"]
         modifiedSchoolDBN = schoolDBN[:-6] #remove last 6 empty white space characters
         povertyPercent = getPovertyPercentBySchoolDBN(modifiedSchoolDBN)
         print(modifiedSchoolDBN + ": " + povertyPercent + "%")
+        povertyPercentArray.append(povertyPercent)
+    #print(povertyPercentArray)
+    sum = 0
+    for i in povertyPercentArray:
+        sum += float(i)
+    ZIPCodePoverty = sum / len(povertyPercentArray)
+    return ZIPCodePoverty
 
 #schoolDBN = "01M015" #01M015 is P.S. 15 Roberto Clemente
 #print(schoolDBN + ": " + getPovertyPercentBySchoolDBN("01M015"))
 #print(getZIPCodebySchoolDBN(schoolDBN))
 
 zipCode = "11432"
-#print(getPovertyPercentByZIPCode(zipCode))
+
 #print(getSchoolsByZIPCode(zipCode))
-printSchoolsPovertyPercentbyZIPCode(zipCode)
+#printSchoolsPovertyPercentbyZIPCode(zipCode)
+
+print("There are " + str(getNumSchoolsByZIPCode(zipCode)) + " schools in ZIP Code " + str(zipCode) + ". ")
+print("This ZIP Code's average NYC DOE poverty rate is " + str(getPovertyPercentByZIPCode(zipCode)) + "%.")
